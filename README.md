@@ -1,43 +1,62 @@
-## Facial Expression Recognition using CNN 
-### Overview:
-The project focuses on recognizing emotions from facial expressions in real-time scenarios.
+# Real-Time Facial Expression Recognition with CNNs
 
-To tackle this problem of emotion recognition, VGG16, and a customized 3-layer CNN are explored.
+![Framework](https://img.shields.io/badge/TensorFlow%20%2F%20Keras-2.13-orange)
+![OpenCV](https://img.shields.io/badge/OpenCV-4.7-green)
+![Dataset](https://img.shields.io/badge/dataset-FER2013-lightgrey)
 
-Augmentation techniques are employed to enhance the performance of the models. These techniques introduce variations in the images, improving the models' ability to generalize to different facial expressions.
+Seven-class facial expression recognition on FER2013, deployed as a real-time webcam demo. A compact custom CNN and VGG16 are compared, each trained with and without data augmentation, and the trained model runs on live video with OpenCV face detection.
 
-The main objective is to identify the best performing model among the explored architectures based on accuracy .
+*Graduate course project, UC Riverside (Apr–Jun 2023), team project. The full write-up is in [`Project_Report_group8.pdf`](Project_Report_group8.pdf).*
 
-The optimal model is further utilized to detect emotions from live video streams using OpenCV & webcam. This application demonstrates the practical use of the developed model in real-world scenarios
+![Real-time demo](https://github.com/Shahriarmsakib/Facial-Expression-Recognition-using-CNN/assets/114893131/cb5db028-e301-413f-a7ab-c468035a5b0b)
 
-### Dataset Description:
- ➢ The project utilizes the FER 2013 dataset, which consists of grayscale images of faces. Each 
-image is sized at 48x48 pixels.
+## Dataset
 
- ➢ The training set consists of 28,709 examples, while the public test set contains 3,589 examples.
- 
- ➢ The dataset includes seven emotion categories for classification: Angry (0), Disgust (1), Fear 
-(2), Happy (3), Sad (4), Surprise (5), and Neutral (6)
-![image](https://github.com/Shahriarmsakib/Facial-Expression-Recognition-using-CNN/assets/114893131/49920c0c-6f5c-4f97-a5d3-4fb6a38b692c)
+[FER2013](https://www.kaggle.com/datasets/msambare/fer2013) contains 48×48 grayscale face crops in seven classes: angry, disgust, fear, happy, sad, surprise and neutral. There are 28,709 training images and 3,589 public-test images.
 
-### Work-Flow:
-![image](https://github.com/Shahriarmsakib/Facial-Expression-Recognition-using-CNN/assets/114893131/48c86801-76cd-41ae-9467-5f86d11f782b)
+![FER2013 samples](https://github.com/Shahriarmsakib/Facial-Expression-Recognition-using-CNN/assets/114893131/49920c0c-6f5c-4f97-a5d3-4fb6a38b692c)
 
-### Expression Recognition in Real-Time:
- ➢ As  VGG16 model with data augmentation performs best, we utilized this model for real
-time prediction of facial expressions.
+## Method
 
- ➢ First we captured live video stream from a webcam using OpenCV and Python.
- 
- ➢ Detected faces in each frame, crop the face and resized them to 48x48 grayscale 
-images, matching the model's input requirements.
+![Workflow](https://github.com/Shahriarmsakib/Facial-Expression-Recognition-using-CNN/assets/114893131/48c86801-76cd-41ae-9467-5f86d11f782b)
 
- ➢ Model predicted a number representing an expression, which was mapped to the 
-corresponding expression and displayed alongside a related emoji
+- **Custom CNN** (`'3-layer'` in the code): a 4-conv network (32-64-128-128 filters) with max-pooling, dropout and a 1024-unit dense layer.
+- **VGG16:** trained from scratch on 48×48×1 input.
+- **Augmentation:** rotation, shifts, shear, zoom, and horizontal/vertical flips.
+- **Real-time inference:** OpenCV Haar-cascade face detection; each face is cropped, resized to 48×48 and classified, and the predicted emotion is overlaid on the video.
 
-### Expression Recognition in Real-Time:
-![image](https://github.com/Shahriarmsakib/Facial-Expression-Recognition-using-CNN/assets/114893131/cb5db028-e301-413f-a7ab-c468035a5b0b)
-![image](https://github.com/Shahriarmsakib/Facial-Expression-Recognition-using-CNN/assets/114893131/58d97007-2a70-4c06-8669-5ec7631cdd0b)
+## Results
 
+VGG16 with augmentation gave the best test accuracy, about **65%** on the FER2013 public test set, against about 60% without augmentation, where test accuracy plateaus after roughly 20 epochs.
 
+| VGG16: test accuracy | VGG16: training loss |
+|:--:|:--:|
+| <img src="Charts/vgg16-Test.png" width="380"> | <img src="Charts/vgg16-Train-Loss.png" width="380"> |
+| **Custom CNN: test accuracy** | **Custom CNN: training loss** |
+| <img src="Charts/3-Layer-Test.png" width="380"> | <img src="Charts/3-Layer-Train-Loss.png" width="380"> |
 
+## Usage
+
+```bash
+pip install tensorflow opencv-python numpy wandb   # or: pip install -r code/requirements.txt (macOS / Apple-silicon pins)
+
+# Train (expects FER2013 as image folders in data/train and data/test; logs to Weights & Biases)
+python code/train_model.py
+
+# Real-time demo (run from the repo root; uses weights/3-layer_with_augmentation.h5 by default)
+python code/realtime_emotion_detection.py
+```
+
+Set `model_name` (`'3-layer'`, `'vgg16'` or `'vgg19'`) and `data_augmentation` at the bottom of each script.
+
+## Repository structure
+
+```
+├── code/
+│   ├── train_model.py                 # model definitions, data generators, training loop
+│   ├── realtime_emotion_detection.py  # webcam demo
+│   └── requirements.txt
+├── weights/                           # trained custom-CNN weights + Haar cascade
+├── Charts/                            # training / test curves
+└── Project_Report_group8.pdf
+```
